@@ -1,78 +1,79 @@
-import React, { useEffect, useRef } from "react";
+import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import {
   ButtonGroup,
   CloseButton,
   ModalContainer,
   ModalHeader,
-  ModalOverlay,
 } from "./style";
 import Botao from "../Botao";
 
 interface ModalProps {
   icon: React.ReactNode;
   titulo: string;
-  aoFechar: () => void;
   children: React.ReactNode;
-  estaAberta: boolean;
   aoClicar: () => void;
+  clickForaModal: boolean;
 }
 
-const Modal = ({
+export interface ModalHandle {
+  open: () => void;
+  close: () => void;
+}
+
+/*
+! forwardRef (Versões do React acima da 19 não possuem)
+<> O 'ref' não pode ser passada como prop normal, então usamos o 'forwardRef' para encaminhar essa 'ref' para o elemento DOM interno do componente.
+* OBS: nas versões a partir da 19, não é necessário mais usar o 'forwardRef', basta passar o 'ref' como prop que dá certo.
+*/
+const Modal = forwardRef<ModalHandle, ModalProps>(({
   icon,
   titulo,
-  aoFechar,
   children,
-  estaAberta,
   aoClicar,
-}: ModalProps) => {
+  clickForaModal = true
+}, ref) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
-  useEffect(() => {
-    const dialogNode = dialogRef.current;
+  const fechaModal = () => {
+    dialogRef.current?.close()
+  }
 
-    if (dialogNode) {
-      if (estaAberta) {
-        dialogNode.showModal();
-      } else {
-        dialogNode.close();
-      }
+  useImperativeHandle(ref, () => (
+    {
+      open: () => dialogRef.current?.showModal(),
+      close: fechaModal
     }
+  ));
 
-    const handleClose = () => aoFechar();
-
-    if (dialogNode) {
-      dialogNode.addEventListener("close", handleClose);
+  const aoClicarForaModal = (evento : React.MouseEvent<HTMLDialogElement>) => {
+    if (clickForaModal && evento.target === dialogRef.current) {
+      fechaModal();
     }
-
-    return () => {
-      if (dialogNode) {
-        dialogNode.removeEventListener("close", handleClose);
-      }
-    };
-  }, [estaAberta, aoFechar]);
+  }
 
   return (
-    <ModalOverlay>
-      <ModalContainer ref={dialogRef}>
+      <ModalContainer ref={dialogRef} onClick={aoClicarForaModal}>
         <ModalHeader>
           <div>
             {icon}
             {titulo}
           </div>
-          <CloseButton onClick={aoFechar}>x</CloseButton>
+          <CloseButton onClick={fechaModal}>x</CloseButton>
         </ModalHeader>
         {children}
         <ButtonGroup>
-          <Botao $variante="secundario" onClick={aoFechar}>
+          <Botao $variante="secundario" onClick={fechaModal}>
             Cancelar
           </Botao>
-          <Botao $variante="primario" onClick={aoClicar}>
+          <Botao $variante="primario" onClick={() => {
+            aoClicar();
+            fechaModal();
+          }}>
             Adicionar
           </Botao>
         </ButtonGroup>
       </ModalContainer>
-    </ModalOverlay>
   );
-};
+});
 
 export default Modal;
