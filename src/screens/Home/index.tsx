@@ -1,9 +1,9 @@
-import BalancoFinanceiro from "../../componentes/BalancoFinanceiro";
-import BarraLateral from "../../componentes/BarraLateral";
-import BarraPesquisa from "../../componentes/BarraPesquisa";
-import OrcamentoDiario from "../../componentes/OrcamentoDiario";
-import SaudacaoUsuario from "../../componentes/SaudacaoUsuario";
-import Transacoes from "../../componentes/Transacoes";
+import BalancoFinanceiro from "../../components/BalancoFinanceiro";
+import BarraLateral from "../../components/BarraLateral";
+import BarraPesquisa from "../../components/BarraPesquisa";
+import OrcamentoDiario from "../../components/OrcamentoDiario";
+import SaudacaoUsuario from "../../components/SaudacaoUsuario";
+import Transacoes from "../../components/Transacoes";
 import {
   Container,
   Movimentacoes,
