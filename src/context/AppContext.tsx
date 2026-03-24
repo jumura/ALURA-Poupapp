@@ -1,22 +1,27 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { IUsuario } from '../types';
-import { obterUsuario, criarUsuario } from '../api';
+import { ITransacoes, IUsuario } from '../types';
+import { obterUsuario, criarUsuario, obterTransacoes, criarTransacao } from '../api';
 
 interface AppContextType {
     usuario: IUsuario | null;
-    criaUsuario: (usuario: Omit<IUsuario, "id">) => Promise<void>;
+    transacoes: ITransacoes[];
+    criaUsuario: (usuario: Omit<IUsuario, "id" | "orcamentoDiario">) => Promise<void>;
+    criaTransacao: (novaTransacao: Omit<ITransacoes, "id">) => Promise<void>
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const [usuario, setUsuario] = useState<IUsuario | null>(null);
+    const [transacoes, setTransacoes] = useState<ITransacoes[]>([])
 
     const carregaDadosUsuario = async () => {
         try {
             const usuarios = await obterUsuario();
+            const transacoes = await obterTransacoes();
             if (usuarios.length > 0) {
                 setUsuario(usuarios[0]);
+                setTransacoes(transacoes);
             }
         } catch (e) {
             console.log(e)
@@ -27,7 +32,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         carregaDadosUsuario();
     })
 
-    const criaUsuario = async (usuario: Omit<IUsuario, "id">) => {
+    const criaUsuario = async (usuario: Omit<IUsuario, "id" | "orcamentoDiario">) => {
         try {
             const novoUsuario = await criarUsuario(usuario);
             setUsuario(novoUsuario);
@@ -35,9 +40,18 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
             console.log(e)
         }
     }
+    
+    const criaTransacao = async (novaTransacao: Omit<ITransacoes, "id">) => {
+        try {
+            const transacaoCriada = await criarTransacao(novaTransacao)
+            setTransacoes((prev) => [...prev, transacaoCriada])
+        } catch (e) {
+            console.log(e)
+        }
+    }
 
     return (
-        <AppContext.Provider value={{ usuario, criaUsuario}}>
+        <AppContext.Provider value={{ usuario, criaUsuario, transacoes, criaTransacao}}>
             {children}
         </AppContext.Provider>
     )
